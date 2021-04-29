@@ -1,0 +1,9 @@
+自己编写的源文件:
+	Client.cpp
+	Server.cpp
+	Socket.cpp
+	Socket.h
+vs2010工程文件所必须的源文件（工程创建时就自带有）：
+	stdafx.cpp
+	stdafx.h
+	targetver.h
