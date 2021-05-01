@@ -1,4 +1,5 @@
 ﻿'''
+    Server.py
     Using multithreading concurrent blokcing
 '''
 
@@ -16,7 +17,7 @@ def socket_server():
         # Prevent port occupancy
         server.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         # Bind IP and port
-        server.bind(("192.168.43.232", 8080))
+        server.bind(("192.168.43.232", 8080))   # 127.0.0.1
         # Listen
         server.listen(5)
     except error as msg:
@@ -30,15 +31,21 @@ def socket_server():
         conn, addr = server.accept()    # addr = (ip, port)
         print("Accept connection from Client" + str(addr))
         conn.send('Connect Success!'.encode())
+        # Multithreading
         thred = threading.Thread(target=deal_message, args=(conn, addr))
         thred.start()
 
 
 def deal_message(conn, addr):
     while True:
-        data_type = conn.recv(1024).decode()
+        try:
+            data_type = conn.recv(1024).decode()
+        except error as msg:
+            print("Client" + str(addr) + "has been closed")
+            break
         print("Data type comes from Client" + str(addr) + ":" + str(data_type))
         # Receive messages
+        # First receive message type from client, 0 is exit, 1 is message, 2 is file
         if data_type == '0':
             print("Client " + str(addr) + " has been closed")
             conn.send('Connection closed!'.encode())
@@ -61,7 +68,7 @@ def deal_message(conn, addr):
             flag = conn.recv(1024).decode()
             if flag == "Y":
                 file_size = struct.calcsize('128sq')                      # Pack file at '128sq' form
-                recv_name = conn.recv(file_size)                          # Receive client file name, include lots of '\x00'
+                recv_name = conn.recv(file_size)                          # Receive client pack file name, include lots of '\x00'
                 if recv_name:
                     filename, filesize = struct.unpack('128sq', recv_name)     # Unpack file
                     file = filename.decode().strip('\x00')                # Remove '\x00', get real file name
